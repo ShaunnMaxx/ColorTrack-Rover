@@ -1,0 +1,13 @@
+[Unit]
+Description=My Custom Script
+After=network.target multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/Desktop/project/main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
