@@ -135,7 +135,7 @@ def motion_control_thread(queue):
 
                     # 检查等待时间是否超过3秒
                     if time.time() - waiting_start_time >= 3:
-                        if rotation_count < :  # 限制旋转次数
+                        if rotation_count < 23:  # 限制旋转次数
                             rotate(True)
                             print(f"目标丢失，旋转中 ({rotation_count + 1}/23)")
                             stop2()  # 每次旋转后短暂停止
