@@ -144,7 +144,7 @@ def motion_control_thread(queue):
                             stop2()
                             print("旋转完成，无目标，保持停止")
                             target_state.set_target_lost(False)  # 重置目标状态
-                            waiting_start_time = None
+                            #waiting_start_time = None
                     else:
                         print(f"目标丢失，等待 {3 - (time.time() - waiting_start_time):.1f} 秒后旋转")
                 else:
