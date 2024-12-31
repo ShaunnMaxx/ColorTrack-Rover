@@ -14,7 +14,6 @@ ColorTrack Rover 是一款由树莓派驱动的自主机器人小车，能够实
 |    ├─myservice.service
 |    └run.sh
 ├─Four_Wheel
-|     ├─main copy.py
 |     ├─main.py
 |     ├─motion_control.py
 |     └object_detection.py

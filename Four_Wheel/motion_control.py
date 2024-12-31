@@ -1,29 +1,11 @@
 import RPi.GPIO as GPIO
 import time
 
-# 定义移动速度和PID控制参数
-Speed = 20
-Kp = 0.1  # 比例增益
-Ki = 0.01  # 积分增益
-Kd = 0.1  # 微分增益
-
-
-# PID控制器
-class PID:
-    def __init__(self, kp, ki, kd):
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
-        self.prev_error = 0
-        self.integral = 0
-
-    def compute(self, setpoint, measured_value):
-        error = setpoint - measured_value
-        self.integral += error
-        derivative = error - self.prev_error
-        self.prev_error = error
-        return self.kp * error + self.ki * self.integral + self.kd * derivative
-
+# 定义移动速度
+Speed = 40
+move_sleep = 0.05  # 每次运动持续时间
+stop_sleep = 0.2  # 停止时间
+rotate_sleep = 0.1  # 旋转时间
 
 # GPIO引脚定义
 IN1, IN2 = 19, 13  # 左前电机
@@ -31,6 +13,9 @@ IN3, IN4 = 6, 5  # 右前电机
 IN5, IN6 = 9, 10  # 左后电机
 IN7, IN8 = 22, 27  # 右后电机
 ENA, ENB, ENC, END = 26, 0, 17, 11  # 左前、右前、左后、右后电机的使能引脚
+
+# 禁用警告
+GPIO.setwarnings(False)
 
 # 初始化GPIO模式
 GPIO.setmode(GPIO.BCM)
@@ -55,16 +40,13 @@ pwm_right_front.start(0)
 pwm_left_back.start(0)
 pwm_right_back.start(0)
 
-# 初始化PID控制器
-pid = PID(Kp, Ki, Kd)
-
 
 # 前进
 def forward():
     set_speed(Speed)
     GPIO.output([IN1, IN3, IN5, IN7], GPIO.HIGH)
     GPIO.output([IN2, IN4, IN6, IN8], GPIO.LOW)
-    time.sleep(0.1)  # 延时100毫秒
+    time.sleep(move_sleep)  # 控制运动时间
 
 
 # 后退
@@ -72,7 +54,7 @@ def backward():
     set_speed(Speed)
     GPIO.output([IN1, IN3, IN5, IN7], GPIO.LOW)
     GPIO.output([IN2, IN4, IN6, IN8], GPIO.HIGH)
-    time.sleep(0.1)  # 延时100毫秒
+    time.sleep(move_sleep)  # 控制运动时间
 
 
 # 右移
@@ -86,7 +68,7 @@ def move_right():
     GPIO.output(IN6, GPIO.LOW)
     GPIO.output(IN7, GPIO.LOW)
     GPIO.output(IN8, GPIO.HIGH)
-    time.sleep(0.1)  # 延时100毫秒
+    time.sleep(move_sleep)  # 控制运动时间
 
 
 # 左移
@@ -100,30 +82,37 @@ def move_left():
     GPIO.output(IN6, GPIO.HIGH)
     GPIO.output(IN7, GPIO.HIGH)
     GPIO.output(IN8, GPIO.LOW)
-    time.sleep(0.1)  # 延时100毫秒
+    time.sleep(move_sleep)  # 控制运动时间
 
 
 # 旋转
-def rotate(clockwise=True):
+def rotate(clockwise):
     set_speed(Speed)
     if clockwise:
         GPIO.output([IN1, IN5], GPIO.HIGH)
         GPIO.output([IN2, IN6], GPIO.LOW)
         GPIO.output([IN3, IN7], GPIO.LOW)
         GPIO.output([IN4, IN8], GPIO.HIGH)
-        time.sleep(0.1)  # 延时100毫秒
+        time.sleep(rotate_sleep)
+        
     else:
         GPIO.output([IN1, IN5], GPIO.LOW)
         GPIO.output([IN2, IN6], GPIO.HIGH)
         GPIO.output([IN3, IN7], GPIO.HIGH)
         GPIO.output([IN4, IN8], GPIO.LOW)
-        time.sleep(0.1)  # 延时100毫秒
+        time.sleep(rotate_sleep)
 
 
-# 停止
+# 停止立即
 def stop():
     set_speed(0)
     GPIO.output([IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8], GPIO.LOW)
+
+# 停止持续
+def stop2():
+    set_speed(0)
+    GPIO.output([IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8], GPIO.LOW)
+    time.sleep(stop_sleep) # 停止时间
 
 
 # 设置所有电机速度
@@ -132,10 +121,3 @@ def set_speed(speed):
     pwm_right_front.ChangeDutyCycle(speed)
     pwm_left_back.ChangeDutyCycle(speed)
     pwm_right_back.ChangeDutyCycle(speed)
-
-
-# 使用PID控制速度
-def control_speed(setpoint):
-    current_speed = Speed  # 这里可以根据实际情况获取当前速度
-    output_speed = pid.compute(setpoint, current_speed)
-    set_speed(max(0, min(100, output_speed)))  # 限制速度在0-100之间
