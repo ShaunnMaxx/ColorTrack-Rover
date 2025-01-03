@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-
-# 定义检测红色区域的函数
 def detect_target(hsv):
     # 定义橙色在HSV颜色空间中的范围
     lower_orange = np.array([10, 100, 100])  # 低阈值，接近橙色
@@ -19,13 +17,13 @@ def detect_target(hsv):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if contours:
-        # 获取最大轮廓，通常对应红色物体
+        # 获取最大轮廓，通常对应橙色物体
         largest_contour = max(contours, key=cv2.contourArea)
 
         # 计算最大轮廓的面积
         area = cv2.contourArea(largest_contour)
 
-        # 使用图像矩（moments）计算红色区域的质心（中心点）
+        # 使用图像矩（moments）计算橙色区域的质心（中心点）
         M = cv2.moments(largest_contour)
         if M["m00"] != 0:
             center_x = int(M["m10"] / M["m00"])
@@ -35,5 +33,5 @@ def detect_target(hsv):
 
         return area, center_x, center_y, mask
     else:
-        # 如果没有检测到红色区域，返回0面积和掩码
+        # 如果没有检测到橙色区域，返回0面积和掩码
         return 0, 0, 0, mask
